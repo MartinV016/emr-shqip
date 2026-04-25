@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Klinika Ime - EMR Platform</title>
+  <style>
+    :root{--primary:#0d9488;--primary-dark:#0f766e;--bg:#f8fafc;--surface:#fff;--text:#0f172a;--text-light:#64748b;--border:#e2e8f0;--success:#22c55e;--warning:#f59e0b;--danger:#ef4444;--radius:12px;--shadow:0 4px 12px rgba(0,0,0,0.08)}
+    *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif;-webkit-tap-highlight-color:transparent}
+    html{scroll-behavior:smooth}
+    body{background:var(--bg);color:var(--text);line-height:1.5;overflow-x:hidden}
+    .view{position:fixed;inset:0;z-index:40;display:none;opacity:0;transition:opacity .25s}
+    .view.active{display:block;opacity:1;pointer-events:all}
+    .view.landing{position:relative;inset:auto;z-index:1;display:block;opacity:1;pointer-events:all}
+    .hidden{display:none!important}
+    .container{max-width:1200px;margin:0 auto;padding:0 clamp(1rem,4vw,2rem)}
+    .section{padding:clamp(3rem,8vw,5rem) 0}
+    .section-title{text-align:center;font-size:clamp(1.8rem,4vw,2.5rem);margin-bottom:1rem}
+    .section-desc{text-align:center;max-width:700px;margin:0 auto 3rem;color:var(--text-light)}
+    
+    header{background:var(--surface);box-shadow:0 2px 8px rgba(0,0,0,0.05);position:sticky;top:0;z-index:50}
+    .header-inner{display:flex;justify-content:space-between;align-items:center;padding:1rem 0}
+    .logo{font-size:1.5rem;font-weight:800;color:var(--primary-dark);text-decoration:none}
+    .nav-links{display:flex;gap:2rem}
+    .nav-links a{color:var(--text);text-decoration:none;font-weight:500}
+    .nav-links a:hover{color:var(--primary)}
+    .menu-toggle{display:none;background:none;border:none;font-size:1.5rem;cursor:pointer}
+    
+    .hero{background:linear-gradient(135deg,var(--primary-dark),var(--primary));color:#fff;text-align:center;padding:clamp(4rem,10vw,8rem) 1rem;border-radius:0 0 24px 24px}
+    .hero h1{font-size:clamp(2.2rem,5vw,3.5rem);margin-bottom:1rem;line-height:1.1}
+    .hero p{max-width:650px;margin:0 auto 2rem;opacity:.95;font-size:clamp(1.1rem,2.5vw,1.3rem)}
+    .btn-hero{display:inline-flex;align-items:center;gap:.5rem;padding:1rem 2.5rem;background:#fff;color:var(--primary-dark);border-radius:50px;font-weight:700;text-decoration:none;transition:.2s}
+    .btn-hero:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.2)}
+    
+    .grid-3{display:grid;grid-template-columns:repeat(auto-fit,minmax(clamp(240px,80vw,300px),1fr));gap:2rem}
+    .card{background:var(--surface);padding:2rem;border-radius:16px;box-shadow:var(--shadow);transition:.2s}
+    .card:hover{transform:translateY(-4px)}
+    .card h3{margin-bottom:.75rem}
+    .card p{color:var(--text-light)}
+    .icon-box{width:50px;height:50px;background:#e0f2fe;color:var(--primary);border-radius:12px;display:grid;place-items:center;font-size:1.5rem;margin-bottom:1rem}
+    
+    .price-card{background:var(--surface);padding:2rem;border-radius:16px;box-shadow:var(--shadow);text-align:center;position:relative;border:2px solid transparent}
+    .price-card.featured{border-color:var(--primary);transform:scale(1.02)}
+    .price{font-size:2.2rem;font-weight:800;color:var(--primary);margin:1rem 0}
+    .price span{font-size:1rem;color:var(--text-light);font-weight:400}
+    .features-list{list-style:none;text-align:left;margin:1.5rem 0;color:var(--text-light)}
+    .features-list li{padding:.4rem 0;display:flex;align-items:center;gap:.5rem}
+    .features-list li::before{content:"✓";color:var(--success);font-weight:bold}
+    .btn-price{width:100%;padding:.9rem;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--text);font-weight:600;cursor:pointer;transition:.2s;font-size:1rem}
+    .btn-price:hover,.price-card.featured .btn-price{background:var(--primary);color:#fff;border-color:var(--primary)}
+    
+    footer{background:var(--text);color:#fff;text-align:center;padding:3rem 1rem;border-radius:24px 24px 0 0;margin-top:2rem}
+    
+    .modal{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;padding:1rem;background:rgba(0,0,0,.6);opacity:0;pointer-events:none;transition:.25s}
+    .modal.active{opacity:1;pointer-events:all}
+    .modal.hidden{display:none!important}
+    .modal-box{background:var(--surface);padding:clamp(1.5rem,3vw,2rem);border-radius:16px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 40px rgba(0,0,0,.3)}
+    .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem}
+    .close-modal{background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--text-light)}
+    .summary{background:#f8fafc;padding:1rem;border-radius:10px;margin-bottom:1.5rem}
+    .summary div{display:flex;justify-content:space-between;margin:.4rem 0}
+    .summary.total{font-weight:700;font-size:1.2rem;border-top:1px solid var(--border);padding-top:.75rem;margin-top:.75rem}
+    #card-fields{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin:1rem 0}
+    .pay-method{display:flex;align-items:center;gap:.75rem;padding:.8rem;border:2px solid var(--border);border-radius:8px;cursor:pointer;margin:.5rem 0}
+    .pay-method.selected{border-color:var(--primary);background:#f0fdfa}
+    .pay-method input{accent-color:var(--primary)}
+    .checkbox-row{display:flex;align-items:center;gap:.5rem;margin:1rem 0;font-size:.95rem}
+    .msg{text-align:center;min-height:1.5rem;font-size:.9rem;margin-top:.5rem}
+    .msg.error{color:var(--danger)}.msg.success{color:var(--success)}
+    
+    /* ✅ AUTH OVERLAY - QENDËRZIM ABSOLUT */
+    .auth-overlay {
+      background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+      padding: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+    
+    .auth-box {
+      background: var(--surface);
+      padding: 2rem;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 440px;
+      margin: 0 auto;
+      box-shadow: 0 20px 40px rgba(0,0,0,.25);
+    }
+    
+    .auth-tabs{display:flex;gap:.5rem;margin-bottom:1.25rem;border-bottom:2px solid var(--border)}
+    .tab{background:none;border:none;padding:.7rem 0;font-size:1rem;cursor:pointer;color:var(--text-light);border-bottom:2px solid transparent;margin-bottom:-2px;flex:1;text-align:center;font-weight:500}
+    .tab.active{color:var(--primary);border-color:var(--primary)}
+    
+    .app{position:fixed;inset:0;display:flex;z-index:30;opacity:1;pointer-events:all;background:var(--bg)}
+    .sidebar{width:clamp(240px,60vw,280px);background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;transition:.3s;z-index:50;position:fixed;height:100vh;left:0;top:0}
+    .sidebar.closed{transform:translateX(-100%)}
+    .logo-app{padding:1.25rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:.75rem}
+    .logo-icon{width:40px;height:40px;background:var(--primary);border-radius:10px;display:grid;place-items:center;color:#fff;font-size:1.5rem}
+    .nav-app{flex:1;padding:1rem 0;overflow-y:auto}
+    .nav-item-app{display:flex;align-items:center;gap:.75rem;padding:.85rem 1.25rem;cursor:pointer;color:var(--text-light);transition:.2s;font-size:1rem}
+    .nav-item-app:hover,.nav-item-app.active{background:#ccfbf1;color:var(--primary-dark);border-right:3px solid var(--primary)}
+    .sidebar-footer{padding:1rem;border-top:1px solid var(--border)}
+    .main{flex:1;margin-left:clamp(240px,60vw,280px);padding:1rem;overflow-y:auto;transition:.3s}
+    .main.full{margin-left:0}
+    .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;background:var(--surface);padding:.85rem 1.25rem;border-radius:var(--radius);box-shadow:var(--shadow);gap:.5rem;flex-wrap:wrap}
+    .menu-btn{background:none;border:none;font-size:1.5rem;cursor:pointer;display:none;color:var(--text)}
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:45;opacity:0;pointer-events:none;transition:.25s}
+    .overlay.active{opacity:1;pointer-events:all}
+    .card-app{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:1rem;overflow:hidden}
+    .card-body-app{padding:1.25rem}
+    .grid-stats{display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(clamp(140px,40vw,180px),1fr))}
+    .stat-box{padding:1.25rem;text-align:center;border-left:4px solid var(--primary);border-radius:8px;background:#fafafa}
+    .stat-box .val{font-size:clamp(1.5rem,4vw,2rem);font-weight:700}
+    .table-wrap{overflow-x:auto;margin:1rem 0;border-radius:8px;border:1px solid var(--border)}
+    table{width:100%;min-width:500px;border-collapse:collapse;font-size:clamp(.85rem,2.5vw,.95rem)}
+    th,td{padding:.85rem 1rem;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
+    th{background:#f1f5f9;font-weight:600;color:var(--text-light);position:sticky;top:0}
+    .form-input,.btn-app{min-height:clamp(40px,8vw,44px);font-size:clamp(.95rem,2.5vw,1rem);width:100%;padding:.6rem .8rem;border:1px solid var(--border);border-radius:var(--radius);margin-bottom:.5rem;background:#fff}
+    .btn-app{background:var(--primary);color:#fff;font-weight:600;cursor:pointer;border:none}
+    .btn-outline{background:transparent;border:1px solid var(--border);color:var(--text)}
+    .grid-form{display:grid;gap:.75rem;grid-template-columns:repeat(auto-fit,minmax(clamp(140px,40vw,160px),1fr))}
+    
+    @media(max-width:1024px){.menu-btn{display:block}.nav-links{display:none}.sidebar{transform:translateX(-100%)}.sidebar.open{transform:translateX(0)}.main{margin-left:0}}
+    @media(max-width:768px){#card-fields{grid-template-columns:1fr}.hero h1{font-size:clamp(1.8rem,4.5vw,2.2rem)}}
+    @media(max-width:480px){html{font-size:15px}.hero{padding:2.5rem 1rem 2rem}.modal-box,.auth-box{padding:1.5rem}}
+  </style>
+</head>
+<body>
+  <!-- 🌐 MARKETING -->
+  <div id="landing-page" class="view landing active">
+    <header><div class="container header-inner"><a href="#" class="logo">🏥 Klinika Ime</a><nav class="nav-links"><a href="#rreth-nesh">Rreth Nesh</a><a href="#sherbimet">Shërbimet</a><a href="#abonimet">Abonimet</a><a href="#kontakt">Kontakt</a></nav><button class="menu-toggle">☰</button></div></header>
+    <section class="hero"><h1>Kujdesi Shëndetësor Modern</h1><p>Menaxhoni pacientët, takimet, laboratorin dhe recetat në një platformë të sigurt.</p><a href="#abonimet" class="btn-hero">📦 Zgjidh Planin Tënd</a></section>
+    <section class="section" id="rreth-nesh"><div class="container"><h2 class="section-title">🏢 Rreth Nesh</h2><p class="section-desc">Platformë e zhvilluar për klinikat shqiptare.</p><div class="grid-3"><div class="card"><div class="icon-box">👨‍⚕️</div><h3>Staf Profesional</h3><p>Mjekë të certifikuar.</p></div><div class="card"><div class="icon-box">🔒</div><h3>Siguri e Plotë</h3><p>Të dhëna të kriptuara.</p></div><div class="card"><div class="icon-box">📱</div><h3>Qasje Kudo</h3><p>Punoni nga çdo pajisje.</p></div></div></div></section>
+    <section class="section" style="background:#f1f5f9" id="sherbimet"><div class="container"><h2 class="section-title">🩺 Shërbimet</h2><p class="section-desc">Automatizo proceset e klinikës suaj.</p><div class="grid-3"><div class="card"><h3>📋 Kartela Mjekësore</h3><p>Historik i plotë digjital.</p></div><div class="card"><h3>📅 Takime</h3><p>Planifikim inteligjent.</p></div><div class="card"><h3>🔬 Laborator</h3><p>Rezultate të menjëhershme.</p></div><div class="card"><h3>💊 Receta</h3><p>Elektronike & e Sigurt.</p></div><div class="card"><h3>🧾 Faturim</h3><p>Raporte financiare.</p></div><div class="card"><h3>🤝 CRM</h3><p>Marrëdhënie me pacientët.</p></div></div></div></section>
+    <section class="section" id="abonimet"><div class="container"><h2 class="section-title">💎 Planet</h2><p class="section-desc">Zgjidh planin që të përshtatet.</p><div class="grid-3">
+      <div class="price-card"><h3>🟢 Basic</h3><div class="price">25 €<span>/muaj</span></div><ul class="features-list"><li>100 pacientë</li><li>Takime</li><li>Receta</li></ul><button class="btn-price" data-plan="basic" data-amount="25">Zgjidh Basic</button></div>
+      <div class="price-card featured"><h3>🔵 Pro</h3><div class="price">65 €<span>/3 muaj</span></div><ul class="features-list"><li>500 pacientë</li><li>Laborator + CRM</li><li>Faturim</li><li>Support 24/7</li></ul><button class="btn-price" data-plan="pro" data-amount="65">Zgjidh Pro ⭐</button></div>
+      <div class="price-card"><h3>🟣 Enterprise</h3><div class="price">200 €<span>/vit</span></div><ul class="features-list"><li>Pacientë të pakufizuar</li><li>API & Role</li><li>Backup</li></ul><button class="btn-price" data-plan="enterprise" data-amount="200">Zgjidh Enterprise</button></div>
+    </div></div></section>
+    <footer id="kontakt"><p>© 2026 Klinika Ime. Të gjitha të drejtat e rezervuara.</p></footer>
+  </div>
+
+  <!-- 💳 PAYMENT MODAL -->
+  <div id="payment-modal" class="modal hidden">
+    <div class="modal-box">
+      <div class="modal-header"><h3>💳 Përfundo Pagesën</h3><button class="close-modal">×</button></div>
+      <div class="summary"><div><span>Plan:</span><strong id="pay-plan">Pro</strong></div><div><span>Kohëzgjatja:</span><strong id="pay-duration">3 muaj</strong></div><div class="total"><span>Total:</span><strong id="pay-total">65.00 €</strong></div></div>
+      <div class="pay-method selected"><input type="radio" name="payment" value="card" checked><span>💳 Kartë Krediti/Debiti</span></div>
+      <div id="card-fields"><input class="form-input" placeholder="Emri në kartë" value="Test User"><input class="form-input" placeholder="Numri i kartës" value="4242 4242 4242 4242"><input class="form-input" placeholder="MM/YY" value="12/28"><input class="form-input" placeholder="CVC" value="123"></div>
+      <div class="checkbox-row"><input type="checkbox" id="agree-terms" checked><label for="agree-terms">Pranoj kushtet e përdorimit</label></div>
+      <button class="btn-app" style="width:100%" id="process-pay-btn">✅ Përfundo Pagesën</button>
+      <div id="pay-msg" class="msg"></div>
+    </div>
+  </div>
+
+  <!-- 🔐 AUTH -->
+  <div id="auth-screen" class="view">
+    <div class="auth-overlay">
+      <div class="auth-box">
+        <div class="auth-tabs"><button class="tab active" data-tab="login">🔑 Kyçu</button><button class="tab" data-tab="register">📝 Regjistrohu</button></div>
+        <form id="login-form"><h2 style="text-align:center;margin-bottom:1rem">Mirë se erdhe</h2><input type="text" id="login-email" class="form-input" placeholder="Email" required><input type="password" id="login-pass" class="form-input" placeholder="Fjalëkalimi" required><div class="checkbox-row"><input type="checkbox" id="remember-me"><label for="remember-me">📌 Më kujto</label></div><button type="submit" class="btn-app" style="width:100%">Kyçu</button><div id="login-msg" class="msg"></div></form>
+        <form id="register-form" class="hidden"><h2 style="text-align:center;margin-bottom:1rem">Krijo Llogari</h2><div id="reg-step-1"><input type="email" id="reg-email" class="form-input" placeholder="Email" required><input type="password" id="reg-pass" class="form-input" placeholder="Fjalëkalimi (min 6)" required><button type="button" class="btn-app" style="width:100%" id="reg-next-btn">Vazhdo →</button></div><div id="reg-step-2" class="hidden"><p style="margin-bottom:10px;color:var(--text-light)">📧 Email: <span id="show-email" style="font-weight:600"></span></p><input type="text" id="reg-username" class="form-input" placeholder="Username" required><div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem"><button type="button" class="btn-app btn-outline" id="reg-prev-btn">← Kthehu</button><button type="submit" class="btn-app">Regjistrohu</button></div></div><div id="reg-msg" class="msg"></div></form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ❌ ACCESS DENIED -->
+  <div id="access-denied" class="view"><div class="auth-overlay"><div class="modal-box" style="text-align:center"><div style="font-size:3rem;margin-bottom:1rem">🔒</div><h3 style="margin-bottom:.5rem">Abonimi i Nevojshëm</h3><p style="color:var(--text-light);margin-bottom:1.5rem">Bli një plan për të hyrë.</p><button class="btn-app" id="go-back-to-plans">📦 Bli Abonim</button></div></div></div>
+
+  <!-- 🏥 EMR APP -->
+  <div id="app-container" class="view">
+    <div class="app">
+      <aside class="sidebar closed" id="sidebar">
+        <div class="logo-app">
+          <div class="logo-icon">🏥</div>
+          <div>
+            <h1 style="font-size:1.1rem">EMR Shqip</h1>
+            <p style="font-size:.8rem;color:var(--text-light)">Paneli</p>
+          </div>
+        </div>
+        <nav class="nav-app" id="nav-list"></nav>
+        <div class="sidebar-footer">
+          <!-- ✅ BUTONI "MARKETING" ËSHTË HEQUR -->
+          <button class="btn-app btn-outline" style="width:100%" id="btn-logout">🚪 Dil</button>
+        </div>
+      </aside>
+      <div class="overlay" id="overlay"></div>
+      <main class="main" id="main-content">
+        <header class="topbar">
+          <button class="menu-btn" id="menu-btn">☰</button>
+          <h2 id="page-title" style="font-size:clamp(1.1rem,3vw,1.3rem);margin:0">📊 Paneli Kryesor</h2>
+          <div id="user-info" style="font-weight:600"></div>
+        </header>
+        <div id="sections-container"></div>
+      </main>
+    </div>
+  </div>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
